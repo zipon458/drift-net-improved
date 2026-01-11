@@ -1,13 +1,13 @@
-package com.example;
+package com.driftnetenhanced;
 
 import net.runelite.client.RuneLite;
 import net.runelite.client.externalplugins.ExternalPluginManager;
 
-public class ExamplePluginTest
+public class DriftNetPluginTest
 {
 	public static void main(String[] args) throws Exception
 	{
-		ExternalPluginManager.loadBuiltin(ExamplePlugin.class);
+		ExternalPluginManager.loadBuiltin(DriftNetPlugin.class);
 		RuneLite.main(args);
 	}
 }
