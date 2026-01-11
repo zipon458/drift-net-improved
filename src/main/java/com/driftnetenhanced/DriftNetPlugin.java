@@ -79,8 +79,7 @@ import net.runelite.client.config.Notification;
 @PluginDescriptor(
 	name = "Drift Net Improved",
 	description = "Drift net plugin with additional features",
-	tags = {"hunter", "fishing", "drift", "net"},
-	enabledByDefault = false
+	tags = {"hunter", "fishing", "drift", "net"}
 )
 public class DriftNetPlugin extends Plugin
 {
