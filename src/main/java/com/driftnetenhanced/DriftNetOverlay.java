@@ -45,6 +45,17 @@ class DriftNetOverlay extends Overlay
 	private final DriftNetConfig config;
 	private final DriftNetPlugin plugin;
 
+	// Performance: Reuse ProgressPieComponent instead of creating new one each frame
+	private final ProgressPieComponent progressPie = new ProgressPieComponent();
+
+	private Color cachedNetFillColor;
+	private int cachedNetFillOpacity = -1;
+	private Color cachedNetStatusColor;
+
+	private Color cachedAnnetteFillColor;
+	private int cachedAnnetteFillOpacity = -1;
+	private Color cachedAnnetteColor;
+
 	@Inject
 	private DriftNetOverlay(DriftNetConfig config, DriftNetPlugin plugin)
 	{
@@ -53,6 +64,10 @@ class DriftNetOverlay extends Overlay
 		setPosition(OverlayPosition.DYNAMIC);
 		setPriority(PRIORITY_LOW);
 		setLayer(OverlayLayer.ABOVE_SCENE);
+
+		// Configure reusable pie component
+		progressPie.setDiameter(20);
+		progressPie.setBorderColor(Color.WHITE);
 	}
 
 	@Override
@@ -87,7 +102,6 @@ class DriftNetOverlay extends Overlay
 
 			if (!isTagged && config.highlightUntaggedFish())
 			{
-				// Render untagged fish
 				Polygon tilePoly = fish.getCanvasTilePoly();
 				if (tilePoly != null)
 				{
@@ -99,10 +113,13 @@ class DriftNetOverlay extends Overlay
 			}
 			else if (isTagged)
 			{
+				Polygon tilePoly = null;
+				boolean needsTimer = config.timerMode() != TimerMode.OFF;
+
 				// Render tagged fish highlight if enabled
 				if (config.highlightTaggedFish())
 				{
-					Polygon tilePoly = fish.getCanvasTilePoly();
+					tilePoly = fish.getCanvasTilePoly();
 					if (tilePoly != null)
 					{
 						graphics.setColor(config.taggedFishFillColor());
@@ -113,7 +130,7 @@ class DriftNetOverlay extends Overlay
 				}
 
 				// Render timer on tagged fish if enabled
-				if (config.timerMode() != TimerMode.OFF)
+				if (needsTimer)
 				{
 					renderFishTimer(graphics, fish);
 				}
@@ -156,14 +173,12 @@ class DriftNetOverlay extends Overlay
 				OverlayUtil.renderTextLocation(graphics, location, secondText, Color.WHITE);
 				break;
 			case PIE:
+				// Performance: Reuse progressPie component instead of creating new one
 				double progress = (double) ticksRemaining / config.timeoutDelay();
-				ProgressPieComponent pie = new ProgressPieComponent();
-				pie.setPosition(location);
-				pie.setProgress(progress);
-				pie.setDiameter(20);
-				pie.setBorderColor(Color.WHITE);
-				pie.setFill(config.untaggedFishColor());
-				pie.render(graphics);
+				progressPie.setPosition(location);
+				progressPie.setProgress(progress);
+				progressPie.setFill(config.untaggedFishColor());
+				progressPie.render(graphics);
 				break;
 		}
 	}
@@ -190,10 +205,17 @@ class DriftNetOverlay extends Overlay
 			if (polygon != null)
 			{
 				Color statusColor = net.getStatus().getColor();
-				if (config.netFillOpacity() > 0)
+				int opacity = config.netFillOpacity();
+
+				if (opacity > 0)
 				{
-					Color fillColor = new Color(statusColor.getRed(), statusColor.getGreen(), statusColor.getBlue(), config.netFillOpacity());
-					graphics.setColor(fillColor);
+					if (cachedNetStatusColor != statusColor || cachedNetFillOpacity != opacity)
+					{
+						cachedNetStatusColor = statusColor;
+						cachedNetFillOpacity = opacity;
+						cachedNetFillColor = new Color(statusColor.getRed(), statusColor.getGreen(), statusColor.getBlue(), opacity);
+					}
+					graphics.setColor(cachedNetFillColor);
 					graphics.fill(polygon);
 				}
 				graphics.setColor(statusColor);
@@ -218,10 +240,17 @@ class DriftNetOverlay extends Overlay
 			if (polygon != null)
 			{
 				Color annetteColor = config.annetteTagColor();
-				if (config.annetteFillOpacity() > 0)
+				int opacity = config.annetteFillOpacity();
+
+				if (opacity > 0)
 				{
-					Color fillColor = new Color(annetteColor.getRed(), annetteColor.getGreen(), annetteColor.getBlue(), config.annetteFillOpacity());
-					graphics.setColor(fillColor);
+					if (cachedAnnetteColor != annetteColor || cachedAnnetteFillOpacity != opacity)
+					{
+						cachedAnnetteColor = annetteColor;
+						cachedAnnetteFillOpacity = opacity;
+						cachedAnnetteFillColor = new Color(annetteColor.getRed(), annetteColor.getGreen(), annetteColor.getBlue(), opacity);
+					}
+					graphics.setColor(cachedAnnetteFillColor);
 					graphics.fill(polygon);
 				}
 				graphics.setColor(annetteColor);

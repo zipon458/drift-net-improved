@@ -26,82 +26,72 @@
  */
 package com.driftnetenhanced;
 
-import java.awt.Dimension;
+import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
 import javax.inject.Inject;
-import net.runelite.api.Client;
-import net.runelite.api.widgets.Widget;
-import net.runelite.client.ui.overlay.Overlay;
-import net.runelite.client.ui.overlay.OverlayLayer;
-import net.runelite.client.ui.overlay.OverlayPosition;
-import net.runelite.client.ui.overlay.OverlayUtil;
+import net.runelite.api.widgets.WidgetItem;
+import net.runelite.client.game.ItemManager;
+import net.runelite.client.ui.overlay.WidgetItemOverlay;
+import net.runelite.client.ui.overlay.components.TextComponent;
 
-class DriftNetInventoryOverlay extends Overlay
+class DriftNetInventoryOverlay extends WidgetItemOverlay
 {
 	private static final int TACKLEBOX_ITEM_ID = 25580;
+	private static final String TEXT_GET_MORE_NETS = "Get more nets";
 
-	private final Client client;
 	private final DriftNetConfig config;
 	private final DriftNetPlugin plugin;
+	private final ItemManager itemManager;
+
+	private final TextComponent textComponent = new TextComponent();
 
 	@Inject
-	private DriftNetInventoryOverlay(Client client, DriftNetConfig config, DriftNetPlugin plugin)
+	private DriftNetInventoryOverlay(DriftNetConfig config, DriftNetPlugin plugin, ItemManager itemManager)
 	{
-		this.client = client;
 		this.config = config;
 		this.plugin = plugin;
-		setPosition(OverlayPosition.DYNAMIC);
-		setLayer(OverlayLayer.ABOVE_WIDGETS);
+		this.itemManager = itemManager;
+		showOnInventory();
 	}
 
 	@Override
-	public Dimension render(Graphics2D graphics)
+	public void renderItemOverlay(Graphics2D graphics, int itemId, WidgetItem widgetItem)
 	{
 		if (!config.highlightTacklebox() || !plugin.isInDriftNetArea())
 		{
-			return null;
+			return;
 		}
 
 		if (plugin.isDriftNetsInInventory())
 		{
-			return null;
+			return;
 		}
 
-		Widget inventoryWidget = client.getWidget(149, 0); // Inventory widget
-		if (inventoryWidget == null || inventoryWidget.isHidden())
+		if (itemId != TACKLEBOX_ITEM_ID)
 		{
-			return null;
+			return;
 		}
 
-		Widget[] children = inventoryWidget.getDynamicChildren();
-		if (children == null)
-		{
-			return null;
-		}
+		Rectangle bounds = widgetItem.getCanvasBounds();
 
-		for (Widget child : children)
-		{
-			if (child.getItemId() == TACKLEBOX_ITEM_ID)
-			{
-				Rectangle bounds = child.getBounds();
-				OverlayUtil.renderPolygon(graphics, rectangleToPolygon(bounds), config.tackleboxColor());
+		final BufferedImage outline = itemManager.getItemOutline(itemId, widgetItem.getQuantity(), config.tackleboxColor());
+		graphics.drawImage(outline, (int) bounds.getX(), (int) bounds.getY(), null);
 
-				net.runelite.api.Point textLocation = new net.runelite.api.Point(
-					bounds.x,
-					bounds.y - 5
-				);
-				OverlayUtil.renderTextLocation(graphics, textLocation, "Get more nets", config.tackleboxColor());
-			}
-		}
+		textComponent.setColor(config.tackleboxColor());
+		textComponent.setText(TEXT_GET_MORE_NETS);
 
-		return null;
-	}
+		FontMetrics fontMetrics = graphics.getFontMetrics();
+		int textWidth = fontMetrics.stringWidth(TEXT_GET_MORE_NETS);
+		int textHeight = fontMetrics.getHeight();
 
-	private java.awt.Polygon rectangleToPolygon(Rectangle rect)
-	{
-		int[] xpoints = {rect.x, rect.x + rect.width, rect.x + rect.width, rect.x};
-		int[] ypoints = {rect.y, rect.y, rect.y + rect.height, rect.y + rect.height};
-		return new java.awt.Polygon(xpoints, ypoints, 4);
+		textComponent.setPosition(new Point(
+			bounds.x + bounds.width / 2 - textWidth / 2,
+			bounds.y + bounds.height + textHeight / 2
+		));
+
+		textComponent.render(graphics);
 	}
 }

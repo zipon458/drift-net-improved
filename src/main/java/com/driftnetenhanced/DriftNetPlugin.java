@@ -154,6 +154,12 @@ public class DriftNetPlugin extends Plugin
 	private long sessionStartTime;
 	private int lastHunterXp;
 
+	private static final double MIN_XP = 72.0;
+	private static final double MAX_XP = 101.5;
+	private static final int MIN_LEVEL = 50;
+	private static final int MAX_LEVEL = 70;
+	private static final double XP_PER_LEVEL = (MAX_XP - MIN_XP) / (MAX_LEVEL - MIN_LEVEL);
+
 	@Provides
 	DriftNetConfig provideConfig(ConfigManager configManager)
 	{
@@ -197,15 +203,12 @@ public class DriftNetPlugin extends Plugin
 	@Subscribe
 	public void onGameStateChanged(GameStateChanged event)
 	{
-		if (event.getGameState() != GameState.LOGGED_IN)
-		{
-			annette = null;
-		}
 		switch (event.getGameState())
 		{
 			case LOGIN_SCREEN:
 			case HOPPING:
 			case LOADING:
+				annette = null;
 				reset();
 				break;
 			case LOGGED_IN:
@@ -267,13 +270,24 @@ public class DriftNetPlugin extends Plugin
 
 	private boolean isFishNextToNet(NPC fish, Collection<DriftNet> nets)
 	{
+		if (nets.isEmpty())
+		{
+			return false;
+		}
 		final WorldPoint fishTile = WorldPoint.fromLocalInstance(client, fish.getLocalLocation());
-		return nets.stream().anyMatch(net -> net.getAdjacentTiles().contains(fishTile));
+		for (DriftNet net : nets)
+		{
+			if (net.getAdjacentTiles().contains(fishTile))
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private boolean isTagExpired(Integer tick)
 	{
-		return tick + config.timeoutDelay() < client.getTickCount();
+		return tick + config.timeoutDelay() <= client.getTickCount();
 	}
 
 	@Subscribe
@@ -284,16 +298,39 @@ public class DriftNetPlugin extends Plugin
 			return;
 		}
 
-		List<DriftNet> closedNets = NETS.stream()
-			.filter(DriftNet::isNotAcceptingFish)
-			.collect(Collectors.toList());
+		if (!taggedFish.isEmpty())
+		{
+			List<DriftNet> closedNets = null;
+			for (DriftNet net : NETS)
+			{
+				if (net.isNotAcceptingFish())
+				{
+					if (closedNets == null)
+					{
+						closedNets = new java.util.ArrayList<>(2);
+					}
+					closedNets.add(net);
+				}
+			}
 
-		taggedFish.entrySet().removeIf(entry ->
-			isTagExpired(entry.getValue()) ||
-			isFishNextToNet(entry.getKey(), closedNets)
-		);
+			if (closedNets != null)
+			{
+				final List<DriftNet> finalClosedNets = closedNets;
+				taggedFish.entrySet().removeIf(entry ->
+					isTagExpired(entry.getValue()) ||
+					isFishNextToNet(entry.getKey(), finalClosedNets)
+				);
+			}
+			else
+			{
+				taggedFish.entrySet().removeIf(entry -> isTagExpired(entry.getValue()));
+			}
+		}
 
-		NETS.forEach(net -> net.setPrevTickStatus(net.getStatus()));
+		for (DriftNet net : NETS)
+		{
+			net.setPrevTickStatus(net.getStatus());
+		}
 
 		armInteraction = false;
 	}
@@ -351,16 +388,25 @@ public class DriftNetPlugin extends Plugin
 	public void onGameObjectSpawned(GameObjectSpawned event)
 	{
 		GameObject object = event.getGameObject();
-		if (object.getId() == ObjectID.FOSSIL_MERMAID_DRIFTNETS)
+		int objectId = object.getId();
+
+		if (objectId == ObjectID.FOSSIL_MERMAID_DRIFTNETS)
 		{
 			annette = object;
+			return;
+		}
+
+		if (objectId != ObjectID.FOSSIL_DRIFT_NET1_MULTI && objectId != ObjectID.FOSSIL_DRIFT_NET2_MULTI)
+		{
+			return;
 		}
 
 		for (DriftNet net : NETS)
 		{
-			if (net.getObjectId() == object.getId())
+			if (net.getObjectId() == objectId)
 			{
 				net.setNet(object);
+				break;
 			}
 		}
 	}
@@ -372,13 +418,22 @@ public class DriftNetPlugin extends Plugin
 		if (object == annette)
 		{
 			annette = null;
+			return;
+		}
+
+		int objectId = object.getId();
+
+		if (objectId != ObjectID.FOSSIL_DRIFT_NET1_MULTI && objectId != ObjectID.FOSSIL_DRIFT_NET2_MULTI)
+		{
+			return;
 		}
 
 		for (DriftNet net : NETS)
 		{
-			if (net.getObjectId() == object.getId())
+			if (net.getObjectId() == objectId)
 			{
 				net.setNet(null);
+				break;
 			}
 		}
 	}
@@ -429,6 +484,11 @@ public class DriftNetPlugin extends Plugin
 	{
 		MenuEntry[] menuEntries = client.getMenuEntries();
 		if (menuEntries.length < 2)
+		{
+			return;
+		}
+
+		if (taggedFish.isEmpty())
 		{
 			return;
 		}
@@ -518,21 +578,18 @@ public class DriftNetPlugin extends Plugin
 		// Drift net XP scales linearly from level 50 to 70
 		// Level 50: 72 XP per fish
 		// Level 70+: 101.5 XP per fish
-		if (hunterLevel < 50)
+		if (hunterLevel < MIN_LEVEL)
 		{
-			return 72.0; // Minimum
+			return MIN_XP;
 		}
-		else if (hunterLevel >= 70)
+		else if (hunterLevel >= MAX_LEVEL)
 		{
-			return 101.5; // Maximum
+			return MAX_XP;
 		}
 		else
 		{
-			// Linear scaling between 50 and 70
-			double xpRange = 101.5 - 72.0; // 29.5 XP range
-			int levelRange = 70 - 50; // 20 levels
-			double xpPerLevel = xpRange / levelRange; // 1.475 XP per level
-			return 72.0 + ((hunterLevel - 50) * xpPerLevel);
+			// Linear scaling between 50 and 70 using precomputed constant
+			return MIN_XP + ((hunterLevel - MIN_LEVEL) * XP_PER_LEVEL);
 		}
 	}
 
@@ -545,6 +602,11 @@ public class DriftNetPlugin extends Plugin
 		}
 
 		final WorldPoint point = WorldPoint.fromLocalInstance(client, localPlayer.getLocalLocation());
+		if (point == null)
+		{
+			return false;
+		}
+
 		return point.getRegionID() == UNDERWATER_REGION;
 	}
 }
