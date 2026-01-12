@@ -17,5 +17,6 @@ This plugin adds the following options (in addition to the core Drift Net plugin
 - **Out of Nets Notification**: Get notified when you run out of drift nets
 - **Full Net Notification**: Get notified when a drift net becomes full
 - **Menu Entry Hiding**: Hide the 'Take down' option from empty drift nets
+- **Menu Swap for Fish**: Prioritize untagged fish over tagged fish when they overlap, allowing you to left-click twice to tag both
 - **Statistics Overlay**: Track total fish caught, session fish count, and fish per hour
 - **Tacklebox Highlighting**: Highlight the tacklebox in your inventory when you have no drift nets

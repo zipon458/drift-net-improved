@@ -404,16 +404,78 @@ public class DriftNetPlugin extends Plugin
 	@Subscribe
 	public void onMenuEntryAdded(MenuEntryAdded event)
 	{
-		if (!config.hideTakeDown())
+		if (!inDriftNetArea)
 		{
 			return;
 		}
 
 		// Hide "Take down" option from drift nets
-		if (event.getOption().equals("Take down") && event.getTarget().contains("Drift net"))
+		if (config.hideTakeDown() && event.getOption().equals("Take down") && event.getTarget().contains("Drift net"))
 		{
 			MenuEntry[] menuEntries = client.getMenuEntries();
 			menuEntries = Arrays.copyOf(menuEntries, menuEntries.length - 1);
+			client.setMenuEntries(menuEntries);
+			return;
+		}
+
+		// Swap fish menu entries to prioritize untagged fish
+		if (config.swapUntaggedFish() && event.getOption().equals("Chase") && event.getTarget().contains("Fish shoal"))
+		{
+			swapFishMenuEntries();
+		}
+	}
+
+	private void swapFishMenuEntries()
+	{
+		MenuEntry[] menuEntries = client.getMenuEntries();
+		if (menuEntries.length < 2)
+		{
+			return;
+		}
+
+		// Find "Chase" options for fish shoals - separate tagged from untagged
+		int untaggedIndex = -1;
+		int taggedIndex = -1;
+
+		for (int i = menuEntries.length - 1; i >= 0; i--)
+		{
+			MenuEntry entry = menuEntries[i];
+			if (entry.getOption().equals("Chase") && entry.getTarget().contains("Fish shoal"))
+			{
+				// Get the NPC from the menu entry
+				NPC npc = entry.getNpc();
+				if (npc != null)
+				{
+					// Check if this fish is in our tagged fish map
+					boolean isTagged = taggedFish.containsKey(npc);
+
+					if (!isTagged && untaggedIndex == -1)
+					{
+						// Found the first untagged fish
+						untaggedIndex = i;
+					}
+					else if (isTagged && taggedIndex == -1)
+					{
+						// Found the first tagged fish
+						taggedIndex = i;
+					}
+
+					// Early exit: if we found both, no need to continue
+					if (untaggedIndex != -1 && taggedIndex != -1)
+					{
+						break;
+					}
+				}
+			}
+		}
+
+		// If we found both tagged and untagged fish, and untagged is NOT already on top
+		// Swap them so untagged becomes the left-click option
+		if (untaggedIndex != -1 && taggedIndex != -1 && untaggedIndex < taggedIndex)
+		{
+			MenuEntry temp = menuEntries[untaggedIndex];
+			menuEntries[untaggedIndex] = menuEntries[taggedIndex];
+			menuEntries[taggedIndex] = temp;
 			client.setMenuEntries(menuEntries);
 		}
 	}

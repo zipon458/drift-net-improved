@@ -274,10 +274,22 @@ public interface DriftNetConfig extends Config
 		return false;
 	}
 
+	@ConfigItem(
+		keyName = "swapUntaggedFish",
+		name = "Swap untagged fish",
+		description = "Prioritize untagged fish over tagged fish when they overlap, allowing left-click to tag both.",
+		position = 21,
+		section = menuSection
+	)
+	default boolean swapUntaggedFish()
+	{
+		return true;
+	}
+
 	@ConfigSection(
 		name = "Statistics Overlay",
 		description = "Fish caught statistics overlay",
-		position = 21,
+		position = 22,
 		closedByDefault = true
 	)
 	String statsSection = "stats";
@@ -286,7 +298,7 @@ public interface DriftNetConfig extends Config
 		keyName = "showStatsOverlay",
 		name = "Show stats overlay",
 		description = "Show the statistics overlay in the drift net area.",
-		position = 22,
+		position = 23,
 		section = statsSection
 	)
 	default boolean showStatsOverlay()
@@ -298,7 +310,7 @@ public interface DriftNetConfig extends Config
 		keyName = "showTotalFish",
 		name = "Show total fish",
 		description = "Show total fish caught since plugin installation.",
-		position = 23,
+		position = 24,
 		section = statsSection
 	)
 	default boolean showTotalFish()
@@ -310,7 +322,7 @@ public interface DriftNetConfig extends Config
 		keyName = "showSessionFish",
 		name = "Show session fish",
 		description = "Show fish caught this session.",
-		position = 24,
+		position = 25,
 		section = statsSection
 	)
 	default boolean showSessionFish()
@@ -322,7 +334,7 @@ public interface DriftNetConfig extends Config
 		keyName = "showFishPerHour",
 		name = "Show fish/hour",
 		description = "Show fish caught per hour this session.",
-		position = 25,
+		position = 26,
 		section = statsSection
 	)
 	default boolean showFishPerHour()
@@ -333,7 +345,7 @@ public interface DriftNetConfig extends Config
 	@ConfigSection(
 		name = "Notifications",
 		description = "Notification settings",
-		position = 26,
+		position = 27,
 		closedByDefault = false
 	)
 	String notificationSection = "notifications";
@@ -342,7 +354,7 @@ public interface DriftNetConfig extends Config
 		keyName = "notifyOutOfNets",
 		name = "Out of nets",
 		description = "Send a notification when you run out of drift nets.",
-		position = 27,
+		position = 28,
 		section = notificationSection
 	)
 	default Notification notifyOutOfNets()
@@ -354,7 +366,7 @@ public interface DriftNetConfig extends Config
 		keyName = "notifyNetFull",
 		name = "Net is full",
 		description = "Send a notification when a drift net becomes full.",
-		position = 28,
+		position = 29,
 		section = notificationSection
 	)
 	default Notification notifyNetFull()
