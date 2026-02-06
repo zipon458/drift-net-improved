@@ -40,10 +40,10 @@ import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.ui.overlay.OverlayUtil;
 import net.runelite.client.ui.overlay.components.ProgressPieComponent;
 
-class DriftNetOverlay extends Overlay
+class DriftNetImprovedOverlay extends Overlay
 {
 	private final DriftNetConfig config;
-	private final DriftNetPlugin plugin;
+	private final DriftNetImprovedPlugin plugin;
 
 	// Performance: Reuse ProgressPieComponent instead of creating new one each frame
 	private final ProgressPieComponent progressPie = new ProgressPieComponent();
@@ -57,7 +57,7 @@ class DriftNetOverlay extends Overlay
 	private Color cachedAnnetteColor;
 
 	@Inject
-	private DriftNetOverlay(DriftNetConfig config, DriftNetPlugin plugin)
+	private DriftNetImprovedOverlay(DriftNetConfig config, DriftNetImprovedPlugin plugin)
 	{
 		this.config = config;
 		this.plugin = plugin;

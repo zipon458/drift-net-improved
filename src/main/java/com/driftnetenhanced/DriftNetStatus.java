@@ -32,7 +32,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-enum DriftNetStatus
+public enum DriftNetStatus
 {
 	UNSET(Color.YELLOW),
 	SET(Color.GREEN),

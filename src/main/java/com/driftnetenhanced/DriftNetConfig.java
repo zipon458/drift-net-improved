@@ -36,7 +36,7 @@ import net.runelite.client.config.Notification;
 import net.runelite.client.config.Range;
 import net.runelite.client.config.Units;
 
-@ConfigGroup(DriftNetPlugin.CONFIG_GROUP)
+@ConfigGroup(DriftNetImprovedPlugin.CONFIG_GROUP)
 public interface DriftNetConfig extends Config
 {
 	@ConfigItem(

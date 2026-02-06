@@ -34,10 +34,10 @@ import net.runelite.client.ui.overlay.components.LineComponent;
 import net.runelite.client.ui.overlay.components.PanelComponent;
 import net.runelite.client.ui.overlay.components.TitleComponent;
 
-class DriftNetStatsOverlay extends Overlay
+class DriftNetImprovedStatsOverlay extends Overlay
 {
 	private final DriftNetConfig config;
-	private final DriftNetPlugin plugin;
+	private final DriftNetImprovedPlugin plugin;
 	private final PanelComponent panelComponent = new PanelComponent();
 
 	// Cache for fish per hour display (updates every 2 seconds)
@@ -46,7 +46,7 @@ class DriftNetStatsOverlay extends Overlay
 	private static final long FISH_PER_HOUR_UPDATE_INTERVAL = 2000;
 
 	@Inject
-	private DriftNetStatsOverlay(DriftNetConfig config, DriftNetPlugin plugin)
+	private DriftNetImprovedStatsOverlay(DriftNetConfig config, DriftNetImprovedPlugin plugin)
 	{
 		this.config = config;
 		this.plugin = plugin;

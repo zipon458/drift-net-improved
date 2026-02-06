@@ -37,7 +37,7 @@ import net.runelite.api.coords.WorldPoint;
 
 @Data
 @RequiredArgsConstructor
-class DriftNet
+public class DriftNet
 {
 	private final int objectId;
 	@Getter(onMethod_ = {@Varbit})

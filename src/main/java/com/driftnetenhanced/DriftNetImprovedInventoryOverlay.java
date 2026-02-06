@@ -37,19 +37,19 @@ import net.runelite.client.game.ItemManager;
 import net.runelite.client.ui.overlay.WidgetItemOverlay;
 import net.runelite.client.ui.overlay.components.TextComponent;
 
-class DriftNetInventoryOverlay extends WidgetItemOverlay
+class DriftNetImprovedInventoryOverlay extends WidgetItemOverlay
 {
 	private static final int TACKLEBOX_ITEM_ID = 25580;
 	private static final String TEXT_GET_MORE_NETS = "Get more nets";
 
 	private final DriftNetConfig config;
-	private final DriftNetPlugin plugin;
+	private final DriftNetImprovedPlugin plugin;
 	private final ItemManager itemManager;
 
 	private final TextComponent textComponent = new TextComponent();
 
 	@Inject
-	private DriftNetInventoryOverlay(DriftNetConfig config, DriftNetPlugin plugin, ItemManager itemManager)
+	private DriftNetImprovedInventoryOverlay(DriftNetConfig config, DriftNetImprovedPlugin plugin, ItemManager itemManager)
 	{
 		this.config = config;
 		this.plugin = plugin;

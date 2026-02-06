@@ -81,7 +81,7 @@ import net.runelite.client.config.Notification;
 	description = "Drift net plugin with additional features",
 	tags = {"hunter", "fishing", "drift", "net"}
 )
-public class DriftNetPlugin extends Plugin
+public class DriftNetImprovedPlugin extends Plugin
 {
 	static final String CONFIG_GROUP = "driftnetenhanced";
 	private static final int UNDERWATER_REGION = 15008;
@@ -101,13 +101,13 @@ public class DriftNetPlugin extends Plugin
 	private OverlayManager overlayManager;
 
 	@Inject
-	private DriftNetOverlay overlay;
+	private DriftNetImprovedOverlay overlay;
 
 	@Inject
-	private DriftNetStatsOverlay statsOverlay;
+	private DriftNetImprovedStatsOverlay statsOverlay;
 
 	@Inject
-	private DriftNetInventoryOverlay inventoryOverlay;
+	private DriftNetImprovedInventoryOverlay inventoryOverlay;
 
 	@Inject
 	private Notifier notifier;
